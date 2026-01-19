@@ -1,0 +1,46 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/my_blog_db?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: 925115
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password: 925115
+  mail:
+    host: smtp.qq.com
+    port: 465
+    username: 2945706262@qq.com
+    password: yplgrzlnexubddad
+    protocol: smtps
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+
+# SM.MS ????
+smms:
+  token: 4EWY08X8DEAXz2VHI3uc6O5nr5h6eSJF
+
+# MyBatis Plus ??
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # ????????
+  global-config:
+    db-config:
+      id-type: auto
+
+
+site:
+  notice: "????"
+  github: "https://github.com/xxx"
+  bilibili: "https://space.bilibili.com/xxx"
+  email: "xxx@example.com"
