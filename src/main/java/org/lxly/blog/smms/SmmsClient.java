@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Component
@@ -23,10 +24,23 @@ public class SmmsClient {
     // SM.MS API endpoints (v2)
     private static final String UPLOAD_URL = "https://smms.app/api/v2/upload";
     private static final String DELETE_URL = "https://smms.app/api/v2/delete";
+    private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
+            "image/jpeg",
+            "image/png",
+            "image/webp",
+            "image/gif"
+    );
 
     public SmmsUploadResult upload(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw BizException.badRequest("File is empty");
+        }
+        if (file.getSize() <= 0) {
+            throw BizException.badRequest("File size is invalid");
+        }
+        String contentType = file.getContentType();
+        if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType)) {
+            throw BizException.badRequest("Unsupported file type");
         }
         try {
             byte[] bytes = file.getBytes();
