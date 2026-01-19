@@ -14,6 +14,7 @@ public interface ArticleService extends IService<Article> {
 
     Page<Article> listMyArticles(Page<Article> page, Long userId, Integer status, String q);
     Article getMyArticle(Long articleId, Long userId);
+    Page<Article> listPublishedArticles(Page<Article> page, String q);
 
     /**
      * Archive counts by month: YYYY-MM -> count
