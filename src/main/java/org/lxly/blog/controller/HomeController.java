@@ -47,6 +47,15 @@ public class HomeController {
         ));
     }
 
+    @GetMapping("/articles")
+    public ApiResponse<Page<Article>> articles(
+            @RequestParam(defaultValue = "1") long page,
+            @RequestParam(defaultValue = "10") long size,
+            @RequestParam(required = false) String q
+    ) {
+        return ApiResponse.ok(articleService.listPublishedArticles(new Page<>(page, size), q));
+    }
+
     @LoginRequired
     @GetMapping("/my/articles/recent")
     public ApiResponse<List<Article>> myRecent(@RequestParam(defaultValue = "10") int size) {
