@@ -40,10 +40,6 @@ public class CommentController {
         if (article == null) {
             throw BizException.badRequest("Article not found");
         }
-        // minimal project: can only comment on your own article
-        if (!article.getUserId().equals(userId)) {
-            throw BizException.forbidden("You can only comment on your own articles");
-        }
 
         Comment c = new Comment();
         c.setArticleId(req.getArticleId());
@@ -54,16 +50,11 @@ public class CommentController {
         return ApiResponse.ok(commentService.addComment(c));
     }
 
-    @LoginRequired
     @GetMapping
     public ApiResponse<List<Comment>> list(@RequestParam Long articleId) {
-        Long userId = UserContextHolder.getUserId();
         Article article = articleService.getById(articleId);
         if (article == null) {
             throw BizException.badRequest("Article not found");
-        }
-        if (!article.getUserId().equals(userId)) {
-            throw BizException.forbidden("Not your article");
         }
         return ApiResponse.ok(commentService.listByArticle(articleId));
     }

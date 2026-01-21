@@ -90,6 +90,16 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
+    public Page<Article> listPublishedArticles(Page<Article> page, String q) {
+        return lambdaQuery()
+                .eq(Article::getStatus, 1)
+                .and(q != null && !q.isBlank(), w -> w.like(Article::getTitle, q).or().like(Article::getContent, q))
+                .orderByDesc(Article::getIsTop)
+                .orderByDesc(Article::getCreateTime)
+                .page(page);
+    }
+
+    @Override
     public Map<String, Long> archiveCounts(Long userId) {
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM");
         List<Article> list = lambdaQuery()

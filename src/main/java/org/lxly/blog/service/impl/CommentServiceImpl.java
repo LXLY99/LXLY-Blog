@@ -23,7 +23,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         if (article == null) {
             throw BizException.badRequest("Article not found");
         }
-        // This project only supports comments on own articles; enforce in controller too.
         save(comment);
         return comment;
     }
