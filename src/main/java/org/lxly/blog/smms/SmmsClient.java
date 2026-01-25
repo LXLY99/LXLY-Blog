@@ -30,6 +30,9 @@ public class SmmsClient {
             "image/webp",
             "image/gif"
     );
+    private static final Set<String> PROTECTED_DELETE_HASHES = Set.of(
+            "sUCFIOjEN2iK9cWfavowGLYQHp"
+    );
 
     public SmmsUploadResult upload(MultipartFile file) {
         if (file == null || file.isEmpty()) {
@@ -72,6 +75,9 @@ public class SmmsClient {
 
     public void deleteByHash(String deleteHash) {
         if (deleteHash == null || deleteHash.isBlank()) {
+            return;
+        }
+        if (PROTECTED_DELETE_HASHES.contains(deleteHash)) {
             return;
         }
         try (HttpResponse resp = HttpRequest.get(DELETE_URL + "/" + deleteHash)

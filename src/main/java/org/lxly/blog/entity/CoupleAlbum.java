@@ -15,6 +15,7 @@ public class CoupleAlbum {
     private Long relationId;
     private String name;
     private String coverUrl;
+    private String coverDeleteHash;
     private String description;
     private LocalDateTime createTime;
 }

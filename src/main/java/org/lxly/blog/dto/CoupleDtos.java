@@ -21,6 +21,7 @@ public class CoupleDtos {
         @NotNull(message = "Album name required")
         private String name;
         private String coverUrl;
+        private String coverDeleteHash;
         private String description;
     }
 
@@ -30,6 +31,7 @@ public class CoupleDtos {
         private Long albumId;
         @NotNull(message = "Photo url required")
         private String url;
+        private String deleteHash;
         private String note;
     }
 

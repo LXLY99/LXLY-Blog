@@ -8,6 +8,7 @@ import org.lxly.blog.common.BizException;
 import org.lxly.blog.dto.CoupleDtos;
 import org.lxly.blog.entity.*;
 import org.lxly.blog.service.*;
+import org.lxly.blog.smms.SmmsClient;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -25,6 +26,7 @@ public class CoupleContentController {
     private final CoupleMessageService messageService;
     private final CoupleMilestoneService milestoneService;
     private final CoupleImportantDateService importantDateService;
+    private final SmmsClient smmsClient;
 
     private Long activeRelationId() {
         Long userId = UserContextHolder.getUserId();
@@ -41,6 +43,7 @@ public class CoupleContentController {
         album.setRelationId(relationId);
         album.setName(req.getName());
         album.setCoverUrl(req.getCoverUrl());
+        album.setCoverDeleteHash(req.getCoverDeleteHash());
         album.setDescription(req.getDescription());
         album.setCreateTime(LocalDateTime.now());
         albumService.save(album);
@@ -61,12 +64,24 @@ public class CoupleContentController {
     @DeleteMapping("/albums/{id}")
     public ApiResponse<Void> deleteAlbum(@PathVariable Long id) {
         Long relationId = activeRelationId();
-        boolean removed = albumService.lambdaUpdate()
+        CoupleAlbum album = albumService.lambdaQuery()
                 .eq(CoupleAlbum::getId, id)
                 .eq(CoupleAlbum::getRelationId, relationId)
-                .remove();
-        if (!removed) {
+                .one();
+        if (album == null) {
             throw BizException.badRequest("Album not found");
+        }
+        albumService.removeById(album.getId());
+        smmsClient.deleteByHash(album.getCoverDeleteHash());
+        List<CoupleAlbumPhoto> photos = albumPhotoService.lambdaQuery()
+                .eq(CoupleAlbumPhoto::getRelationId, relationId)
+                .eq(CoupleAlbumPhoto::getAlbumId, id)
+                .list();
+        if (!photos.isEmpty()) {
+            for (CoupleAlbumPhoto photo : photos) {
+                smmsClient.deleteByHash(photo.getDeleteHash());
+            }
+            albumPhotoService.removeBatchByIds(photos.stream().map(CoupleAlbumPhoto::getId).toList());
         }
         return ApiResponse.ok();
     }
@@ -83,6 +98,7 @@ public class CoupleContentController {
         photo.setRelationId(relationId);
         photo.setAlbumId(req.getAlbumId());
         photo.setUrl(req.getUrl());
+        photo.setDeleteHash(req.getDeleteHash());
         photo.setNote(req.getNote());
         photo.setCreateTime(LocalDateTime.now());
         albumPhotoService.save(photo);
@@ -104,13 +120,15 @@ public class CoupleContentController {
     @DeleteMapping("/albums/photos/{id}")
     public ApiResponse<Void> deletePhoto(@PathVariable Long id) {
         Long relationId = activeRelationId();
-        boolean removed = albumPhotoService.lambdaUpdate()
+        CoupleAlbumPhoto photo = albumPhotoService.lambdaQuery()
                 .eq(CoupleAlbumPhoto::getId, id)
                 .eq(CoupleAlbumPhoto::getRelationId, relationId)
-                .remove();
-        if (!removed) {
+                .one();
+        if (photo == null) {
             throw BizException.badRequest("Photo not found");
         }
+        albumPhotoService.removeById(photo.getId());
+        smmsClient.deleteByHash(photo.getDeleteHash());
         return ApiResponse.ok();
     }
 

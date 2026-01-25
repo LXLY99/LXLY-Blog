@@ -15,6 +15,7 @@ public class CoupleAlbumPhoto {
     private Long relationId;
     private Long albumId;
     private String url;
+    private String deleteHash;
     private String note;
     private LocalDateTime createTime;
 }

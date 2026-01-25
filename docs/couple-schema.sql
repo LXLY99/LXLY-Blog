@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS couple_album (
   relation_id BIGINT NOT NULL,
   name VARCHAR(100) NOT NULL,
   cover_url VARCHAR(512) NULL,
+  cover_delete_hash VARCHAR(128) NULL,
   description VARCHAR(512) NULL,
   create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_couple_album_relation (relation_id)
@@ -28,6 +29,7 @@ CREATE TABLE IF NOT EXISTS couple_album_photo (
   relation_id BIGINT NOT NULL,
   album_id BIGINT NOT NULL,
   url VARCHAR(512) NOT NULL,
+  delete_hash VARCHAR(128) NULL,
   note VARCHAR(512) NULL,
   create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_couple_photo_relation (relation_id),

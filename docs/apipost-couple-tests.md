@@ -90,6 +90,7 @@ pm.test("response has active and pendingInvites", function () {
 {
   "name": "旅行相册",
   "coverUrl": "https://example.com/cover.jpg",
+  "coverDeleteHash": "smms-delete-hash",
   "description": "2024年旅行"
 }
 ```
@@ -109,6 +110,7 @@ pm.test("response has active and pendingInvites", function () {
 {
   "albumId": 1,
   "url": "https://example.com/photo.jpg",
+  "deleteHash": "smms-delete-hash",
   "note": "海边"
 }
 ```
