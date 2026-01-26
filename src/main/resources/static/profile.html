@@ -11,6 +11,7 @@
     <div class="nav-inner">
       <div class="nav-logo">LXLY Blog</div>
       <div class="nav-links">
+        <a href="/home.html">首页</a>
         <a href="/blog.html">博客</a>
         <a href="/couple.html">情侣模块</a>
         <button class="button ghost" data-logout>退出登录</button>
@@ -44,13 +45,12 @@
             </select>
           </div>
           <div class="form-row">
-            <label>头像 URL</label>
-            <input class="input" name="avatar" placeholder="https://..." />
+            <label>头像上传（SM.MS）</label>
+            <input class="input" type="file" id="avatar-upload" accept="image/*" />
+            <div class="muted" id="avatar-upload-result"></div>
           </div>
-          <div class="form-row">
-            <label>头像 deleteHash</label>
-            <input class="input" name="avatarDeleteHash" placeholder="SM.MS delete hash" />
-          </div>
+          <input type="hidden" name="avatar" />
+          <input type="hidden" name="avatarDeleteHash" />
           <button class="button" type="submit">保存</button>
         </form>
       </section>
@@ -76,6 +76,13 @@
       <div class="nav-links">
         <a class="button" href="/couple.html">进入情侣模块</a>
       </div>
+    </section>
+
+    <section class="card" style="margin-top: 24px;">
+      <h3 class="section-title">情侣模块背景图</h3>
+      <p class="muted">上传后在情侣模块展示，可随时替换。</p>
+      <input class="input" type="file" id="couple-bg-upload" accept="image/*" />
+      <div class="muted" id="couple-bg-result" style="margin-top: 8px;"></div>
     </section>
   </main>
 

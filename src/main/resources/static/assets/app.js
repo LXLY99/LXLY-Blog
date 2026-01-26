@@ -52,7 +52,7 @@ function showToast(message) {
 
 function requireAuth() {
   if (!getToken()) {
-    window.location.href = '/auth.html';
+    window.location.href = '/index.html';
   }
 }
 
@@ -66,7 +66,7 @@ function initNav() {
         // ignore
       } finally {
         localStorage.removeItem('token');
-        window.location.href = '/auth.html';
+        window.location.href = '/index.html';
       }
     });
   }

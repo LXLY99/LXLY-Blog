@@ -6,8 +6,42 @@ const pendingEl = document.getElementById('pending-invites');
 const inviteForm = document.getElementById('invite-form');
 const refreshBtn = document.getElementById('refresh-status');
 const breakupBtn = document.getElementById('breakup-btn');
-const tabs = document.querySelectorAll('#content-tabs .tab');
-const panel = document.getElementById('content-panel');
+const albumForm = document.getElementById('album-form');
+const albumListEl = document.getElementById('album-list');
+const albumCoverInput = document.getElementById('album-cover');
+const albumCoverResult = document.getElementById('album-cover-result');
+const photoForm = document.getElementById('photo-form');
+const photoUploadInput = document.getElementById('photo-upload');
+const photoUploadResult = document.getElementById('photo-upload-result');
+const calendarForm = document.getElementById('calendar-form');
+const calendarList = document.getElementById('calendar-list');
+const todoForm = document.getElementById('todo-form');
+const todoList = document.getElementById('todo-list');
+const messageForm = document.getElementById('message-form');
+const messageList = document.getElementById('message-list');
+const milestoneForm = document.getElementById('milestone-form');
+const milestoneList = document.getElementById('milestone-list');
+const dateForm = document.getElementById('date-form');
+const dateList = document.getElementById('date-list');
+const hero = document.getElementById('couple-hero');
+
+const coupleBg = localStorage.getItem('coupleBackground');
+if (coupleBg) {
+  hero.style.backgroundImage = `url(${coupleBg})`;
+}
+
+async function uploadImage(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await fetch('/api/upload/image', {
+    method: 'POST',
+    headers: { ...App.getToken() ? { Authorization: `Bearer ${App.getToken()}` } : {} },
+    body: formData,
+  });
+  const data = await response.json();
+  if (data.code !== 0) throw new Error(data.message || '上传失败');
+  return data.data;
+}
 
 async function loadStatus() {
   try {
@@ -55,6 +89,7 @@ async function handleInvite(action, relationId) {
     });
     App.showToast('操作成功');
     await loadStatus();
+    await loadAllLists();
   } catch (err) {
     App.showToast(err.message);
   }
@@ -82,414 +117,313 @@ breakupBtn.addEventListener('click', async () => {
     await App.apiFetch('/api/couple/breakup', { method: 'POST' });
     App.showToast('已解除关系');
     await loadStatus();
+    await loadAllLists();
   } catch (err) {
     App.showToast(err.message);
   }
 });
 
-const templates = {
-  albums: () => `
-    <div class="grid grid-2">
-      <form class="form" id="album-form">
-        <label>相册名称</label>
-        <input class="input" name="name" required />
-        <label>封面图片 URL</label>
-        <input class="input" name="coverUrl" />
-        <label>封面 deleteHash</label>
-        <input class="input" name="coverDeleteHash" />
-        <label>描述</label>
-        <input class="input" name="description" />
-        <button class="button" type="submit">创建相册</button>
-      </form>
-      <div>
-        <h4>相册列表</h4>
-        <div id="album-list" class="list"></div>
-      </div>
-    </div>
-    <div class="card" style="margin-top: 16px;">
-      <h4>上传照片到相册</h4>
-      <form class="form" id="photo-form">
-        <label>相册 ID</label>
-        <input class="input" name="albumId" required />
-        <label>图片 URL</label>
-        <input class="input" name="url" required />
-        <label>deleteHash</label>
-        <input class="input" name="deleteHash" />
-        <label>备注</label>
-        <input class="input" name="note" />
-        <button class="button" type="submit">添加照片</button>
-      </form>
-      <div style="margin-top: 12px;">
-        <label>或直接上传图片（SM.MS）</label>
-        <input class="input" type="file" id="photo-upload" accept="image/*" />
-        <div class="muted" id="upload-result"></div>
-      </div>
-    </div>
-  `,
-  calendar: () => `
-    <div class="grid grid-2">
-      <form class="form" id="calendar-form">
-        <label>标题</label>
-        <input class="input" name="title" required />
-        <label>描述</label>
-        <input class="input" name="description" />
-        <label>开始时间</label>
-        <input class="input" name="startTime" type="datetime-local" required />
-        <label>结束时间</label>
-        <input class="input" name="endTime" type="datetime-local" />
-        <label>共享</label>
-        <select class="input" name="shared">
-          <option value="true">共享</option>
-          <option value="false">仅自己</option>
-        </select>
-        <button class="button" type="submit">创建日程</button>
-      </form>
-      <div>
-        <h4>日程列表</h4>
-        <div id="calendar-list" class="list"></div>
-      </div>
-    </div>
-  `,
-  todos: () => `
-    <div class="grid grid-2">
-      <form class="form" id="todo-form">
-        <label>待办内容</label>
-        <input class="input" name="content" required />
-        <label>截止时间</label>
-        <input class="input" name="dueTime" type="datetime-local" />
-        <button class="button" type="submit">创建待办</button>
-      </form>
-      <div>
-        <h4>待办列表</h4>
-        <div id="todo-list" class="list"></div>
-      </div>
-    </div>
-  `,
-  messages: () => `
-    <div class="grid grid-2">
-      <form class="form" id="message-form">
-        <label>留言内容</label>
-        <textarea class="input" name="content" required style="min-height: 120px;"></textarea>
-        <button class="button" type="submit">发送留言</button>
-      </form>
-      <div>
-        <h4>留言列表</h4>
-        <div id="message-list" class="list"></div>
-      </div>
-    </div>
-  `,
-  milestones: () => `
-    <div class="grid grid-2">
-      <form class="form" id="milestone-form">
-        <label>里程碑标题</label>
-        <input class="input" name="title" required />
-        <label>描述</label>
-        <input class="input" name="description" />
-        <label>日期</label>
-        <input class="input" name="eventDate" type="date" required />
-        <button class="button" type="submit">创建里程碑</button>
-      </form>
-      <div>
-        <h4>里程碑列表</h4>
-        <div id="milestone-list" class="list"></div>
-      </div>
-    </div>
-  `,
-  dates: () => `
-    <div class="grid grid-2">
-      <form class="form" id="date-form">
-        <label>重要日期名称</label>
-        <input class="input" name="title" required />
-        <label>日期</label>
-        <input class="input" name="date" type="date" required />
-        <label>提前提醒天数</label>
-        <input class="input" name="remindDays" type="number" />
-        <button class="button" type="submit">添加日期</button>
-      </form>
-      <div>
-        <h4>重要日期列表</h4>
-        <div id="date-list" class="list"></div>
-      </div>
-    </div>
-  `,
-};
+albumCoverInput.addEventListener('change', async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+  try {
+    const result = await uploadImage(file);
+    albumForm.coverUrl.value = result.url;
+    albumForm.coverDeleteHash.value = result.deleteHash;
+    albumCoverResult.textContent = '封面已上传';
+  } catch (err) {
+    albumCoverResult.textContent = err.message;
+  }
+});
 
-function setActiveTab(name) {
-  tabs.forEach((tab) => tab.classList.toggle('active', tab.dataset.tab === name));
-  panel.innerHTML = templates[name]();
-  initTabActions(name);
-}
+photoUploadInput.addEventListener('change', async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+  try {
+    const result = await uploadImage(file);
+    photoForm.url.value = result.url;
+    photoForm.deleteHash.value = result.deleteHash;
+    photoUploadResult.textContent = '照片已上传';
+  } catch (err) {
+    photoUploadResult.textContent = err.message;
+  }
+});
 
-async function initTabActions(name) {
-  if (name === 'albums') {
-    const listEl = document.getElementById('album-list');
-    const form = document.getElementById('album-form');
-    const photoForm = document.getElementById('photo-form');
-    const uploadInput = document.getElementById('photo-upload');
-    const uploadResult = document.getElementById('upload-result');
-
-    async function loadAlbums() {
-      const data = await App.apiFetch('/api/couple/albums');
-      listEl.innerHTML = data
-        .map(
-          (item) => `
-            <div class="list-item">
-              <strong>${item.name}</strong>
-              <div class="muted">ID ${item.id}</div>
-              <button class="button ghost" data-remove="${item.id}">删除</button>
-            </div>
-          `
-        )
-        .join('') || '<div class="muted">暂无相册</div>';
-
-      listEl.querySelectorAll('[data-remove]').forEach((btn) => {
-        btn.addEventListener('click', async () => {
-          await App.apiFetch(`/api/couple/albums/${btn.dataset.remove}`, { method: 'DELETE' });
-          App.showToast('已删除相册');
-          loadAlbums();
-        });
-      });
-    }
-
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const payload = Object.fromEntries(new FormData(form).entries());
-      await App.apiFetch('/api/couple/albums', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
-      App.showToast('相册已创建');
-      form.reset();
-      loadAlbums();
+albumForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const payload = Object.fromEntries(new FormData(albumForm).entries());
+  try {
+    await App.apiFetch('/api/couple/albums', {
+      method: 'POST',
+      body: JSON.stringify(payload),
     });
-
-    photoForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const payload = Object.fromEntries(new FormData(photoForm).entries());
-      payload.albumId = Number(payload.albumId);
-      await App.apiFetch('/api/couple/albums/photos', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
-      App.showToast('照片已添加');
-      photoForm.reset();
-    });
-
-    uploadInput.addEventListener('change', async (event) => {
-      const file = event.target.files[0];
-      if (!file) return;
-      const formData = new FormData();
-      formData.append('file', file);
-      try {
-        const response = await fetch('/api/upload/image', {
-          method: 'POST',
-          headers: { ...App.getToken() ? { Authorization: `Bearer ${App.getToken()}` } : {} },
-          body: formData,
-        });
-        const data = await response.json();
-        if (data.code !== 0) throw new Error(data.message || '上传失败');
-        uploadResult.textContent = `URL: ${data.data.url} | deleteHash: ${data.data.deleteHash}`;
-      } catch (err) {
-        uploadResult.textContent = err.message;
-      }
-    });
-
+    App.showToast('相册已创建');
+    albumForm.reset();
+    albumCoverResult.textContent = '';
     loadAlbums();
+  } catch (err) {
+    App.showToast(err.message);
   }
+});
 
-  if (name === 'calendar') {
-    const listEl = document.getElementById('calendar-list');
-    const form = document.getElementById('calendar-form');
-    async function loadCalendar() {
-      const data = await App.apiFetch('/api/couple/calendar');
-      listEl.innerHTML = data
-        .map(
-          (item) => `
-          <div class="list-item">
-            <strong>${item.title}</strong>
-            <div class="muted">${App.formatDate(item.startTime)}</div>
-            <button class="button ghost" data-remove="${item.id}">删除</button>
-          </div>
-        `
-        )
-        .join('') || '<div class="muted">暂无日程</div>';
-      listEl.querySelectorAll('[data-remove]').forEach((btn) => {
-        btn.addEventListener('click', async () => {
-          await App.apiFetch(`/api/couple/calendar/${btn.dataset.remove}`, { method: 'DELETE' });
-          loadCalendar();
-        });
-      });
-    }
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const payload = Object.fromEntries(new FormData(form).entries());
-      payload.shared = payload.shared === 'true';
-      await App.apiFetch('/api/couple/calendar', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
-      form.reset();
-      loadCalendar();
+photoForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const payload = Object.fromEntries(new FormData(photoForm).entries());
+  payload.albumId = Number(payload.albumId);
+  try {
+    await App.apiFetch('/api/couple/albums/photos', {
+      method: 'POST',
+      body: JSON.stringify(payload),
     });
+    App.showToast('照片已添加');
+    photoForm.reset();
+    photoUploadResult.textContent = '';
+  } catch (err) {
+    App.showToast(err.message);
+  }
+});
+
+calendarForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const payload = Object.fromEntries(new FormData(calendarForm).entries());
+  payload.shared = payload.shared === 'true';
+  try {
+    await App.apiFetch('/api/couple/calendar', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    calendarForm.reset();
     loadCalendar();
+  } catch (err) {
+    App.showToast(err.message);
   }
+});
 
-  if (name === 'todos') {
-    const listEl = document.getElementById('todo-list');
-    const form = document.getElementById('todo-form');
-    async function loadTodos() {
-      const data = await App.apiFetch('/api/couple/todos');
-      listEl.innerHTML = data
-        .map(
-          (item) => `
-          <div class="list-item">
-            <strong>${item.content}</strong>
-            <div class="muted">${item.completed ? '已完成' : '未完成'}</div>
-            <div style="margin-top: 8px; display: flex; gap: 8px;">
-              <button class="button secondary" data-toggle="${item.id}">切换</button>
-              <button class="button ghost" data-remove="${item.id}">删除</button>
-            </div>
-          </div>
-        `
-        )
-        .join('') || '<div class="muted">暂无待办</div>';
-      listEl.querySelectorAll('[data-toggle]').forEach((btn) => {
-        btn.addEventListener('click', async () => {
-          await App.apiFetch(`/api/couple/todos/${btn.dataset.toggle}/toggle`, { method: 'POST' });
-          loadTodos();
-        });
-      });
-      listEl.querySelectorAll('[data-remove]').forEach((btn) => {
-        btn.addEventListener('click', async () => {
-          await App.apiFetch(`/api/couple/todos/${btn.dataset.remove}`, { method: 'DELETE' });
-          loadTodos();
-        });
-      });
-    }
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const payload = Object.fromEntries(new FormData(form).entries());
-      await App.apiFetch('/api/couple/todos', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
-      form.reset();
-      loadTodos();
+todoForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const payload = Object.fromEntries(new FormData(todoForm).entries());
+  try {
+    await App.apiFetch('/api/couple/todos', {
+      method: 'POST',
+      body: JSON.stringify(payload),
     });
+    todoForm.reset();
     loadTodos();
+  } catch (err) {
+    App.showToast(err.message);
   }
+});
 
-  if (name === 'messages') {
-    const listEl = document.getElementById('message-list');
-    const form = document.getElementById('message-form');
-    async function loadMessages() {
-      const data = await App.apiFetch('/api/couple/messages');
-      listEl.innerHTML = data
-        .map(
-          (item) => `
-          <div class="list-item">
-            <strong>${item.content}</strong>
-            <div class="muted">${App.formatDate(item.createTime)}</div>
-            <button class="button ghost" data-remove="${item.id}">删除</button>
-          </div>
-        `
-        )
-        .join('') || '<div class="muted">暂无留言</div>';
-      listEl.querySelectorAll('[data-remove]').forEach((btn) => {
-        btn.addEventListener('click', async () => {
-          await App.apiFetch(`/api/couple/messages/${btn.dataset.remove}`, { method: 'DELETE' });
-          loadMessages();
-        });
-      });
-    }
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const payload = Object.fromEntries(new FormData(form).entries());
-      await App.apiFetch('/api/couple/messages', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
-      form.reset();
-      loadMessages();
+messageForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const payload = Object.fromEntries(new FormData(messageForm).entries());
+  try {
+    await App.apiFetch('/api/couple/messages', {
+      method: 'POST',
+      body: JSON.stringify(payload),
     });
+    messageForm.reset();
     loadMessages();
+  } catch (err) {
+    App.showToast(err.message);
   }
+});
 
-  if (name === 'milestones') {
-    const listEl = document.getElementById('milestone-list');
-    const form = document.getElementById('milestone-form');
-    async function loadMilestones() {
-      const data = await App.apiFetch('/api/couple/milestones');
-      listEl.innerHTML = data
-        .map(
-          (item) => `
-          <div class="list-item">
-            <strong>${item.title}</strong>
-            <div class="muted">${item.eventDate}</div>
-            <button class="button ghost" data-remove="${item.id}">删除</button>
-          </div>
-        `
-        )
-        .join('') || '<div class="muted">暂无里程碑</div>';
-      listEl.querySelectorAll('[data-remove]').forEach((btn) => {
-        btn.addEventListener('click', async () => {
-          await App.apiFetch(`/api/couple/milestones/${btn.dataset.remove}`, { method: 'DELETE' });
-          loadMilestones();
-        });
-      });
-    }
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const payload = Object.fromEntries(new FormData(form).entries());
-      await App.apiFetch('/api/couple/milestones', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
-      form.reset();
-      loadMilestones();
+milestoneForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const payload = Object.fromEntries(new FormData(milestoneForm).entries());
+  try {
+    await App.apiFetch('/api/couple/milestones', {
+      method: 'POST',
+      body: JSON.stringify(payload),
     });
+    milestoneForm.reset();
     loadMilestones();
+  } catch (err) {
+    App.showToast(err.message);
   }
+});
 
-  if (name === 'dates') {
-    const listEl = document.getElementById('date-list');
-    const form = document.getElementById('date-form');
-    async function loadDates() {
-      const data = await App.apiFetch('/api/couple/important-dates');
-      listEl.innerHTML = data
-        .map(
-          (item) => `
+dateForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const payload = Object.fromEntries(new FormData(dateForm).entries());
+  payload.remindDays = payload.remindDays ? Number(payload.remindDays) : null;
+  try {
+    await App.apiFetch('/api/couple/important-dates', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    dateForm.reset();
+    loadDates();
+  } catch (err) {
+    App.showToast(err.message);
+  }
+});
+
+async function loadAlbums() {
+  try {
+    const data = await App.apiFetch('/api/couple/albums');
+    albumListEl.innerHTML = data
+      .map(
+        (item) => `
           <div class="list-item">
-            <strong>${item.title}</strong>
-            <div class="muted">${item.date} 提前 ${item.remindDays || 0} 天提醒</div>
+            <strong>${item.name}</strong>
+            <div class="muted">ID ${item.id}</div>
             <button class="button ghost" data-remove="${item.id}">删除</button>
           </div>
         `
-        )
-        .join('') || '<div class="muted">暂无重要日期</div>';
-      listEl.querySelectorAll('[data-remove]').forEach((btn) => {
-        btn.addEventListener('click', async () => {
-          await App.apiFetch(`/api/couple/important-dates/${btn.dataset.remove}`, { method: 'DELETE' });
-          loadDates();
-        });
+      )
+      .join('') || '<div class="muted">暂无相册</div>';
+
+    albumListEl.querySelectorAll('[data-remove]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        await App.apiFetch(`/api/couple/albums/${btn.dataset.remove}`, { method: 'DELETE' });
+        App.showToast('已删除相册');
+        loadAlbums();
       });
-    }
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const payload = Object.fromEntries(new FormData(form).entries());
-      payload.remindDays = payload.remindDays ? Number(payload.remindDays) : null;
-      await App.apiFetch('/api/couple/important-dates', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
-      form.reset();
-      loadDates();
     });
-    loadDates();
+  } catch (err) {
+    albumListEl.innerHTML = `<div class="muted">${err.message}</div>`;
   }
 }
 
-tabs.forEach((tab) => tab.addEventListener('click', () => setActiveTab(tab.dataset.tab)));
+async function loadCalendar() {
+  try {
+    const data = await App.apiFetch('/api/couple/calendar');
+    calendarList.innerHTML = data
+      .map(
+        (item) => `
+        <div class="list-item">
+          <strong>${item.title}</strong>
+          <div class="muted">${App.formatDate(item.startTime)}</div>
+          <button class="button ghost" data-remove="${item.id}">删除</button>
+        </div>
+      `
+      )
+      .join('') || '<div class="muted">暂无日程</div>';
+    calendarList.querySelectorAll('[data-remove]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        await App.apiFetch(`/api/couple/calendar/${btn.dataset.remove}`, { method: 'DELETE' });
+        loadCalendar();
+      });
+    });
+  } catch (err) {
+    calendarList.innerHTML = `<div class="muted">${err.message}</div>`;
+  }
+}
+
+async function loadTodos() {
+  try {
+    const data = await App.apiFetch('/api/couple/todos');
+    todoList.innerHTML = data
+      .map(
+        (item) => `
+        <div class="list-item">
+          <strong>${item.content}</strong>
+          <div class="muted">${item.completed ? '已完成' : '未完成'}</div>
+          <div style="margin-top: 8px; display: flex; gap: 8px;">
+            <button class="button secondary" data-toggle="${item.id}">切换</button>
+            <button class="button ghost" data-remove="${item.id}">删除</button>
+          </div>
+        </div>
+      `
+      )
+      .join('') || '<div class="muted">暂无待办</div>';
+    todoList.querySelectorAll('[data-toggle]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        await App.apiFetch(`/api/couple/todos/${btn.dataset.toggle}/toggle`, { method: 'POST' });
+        loadTodos();
+      });
+    });
+    todoList.querySelectorAll('[data-remove]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        await App.apiFetch(`/api/couple/todos/${btn.dataset.remove}`, { method: 'DELETE' });
+        loadTodos();
+      });
+    });
+  } catch (err) {
+    todoList.innerHTML = `<div class="muted">${err.message}</div>`;
+  }
+}
+
+async function loadMessages() {
+  try {
+    const data = await App.apiFetch('/api/couple/messages');
+    messageList.innerHTML = data
+      .map(
+        (item) => `
+        <div class="list-item">
+          <strong>${item.content}</strong>
+          <div class="muted">${App.formatDate(item.createTime)}</div>
+          <button class="button ghost" data-remove="${item.id}">删除</button>
+        </div>
+      `
+      )
+      .join('') || '<div class="muted">暂无留言</div>';
+    messageList.querySelectorAll('[data-remove]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        await App.apiFetch(`/api/couple/messages/${btn.dataset.remove}`, { method: 'DELETE' });
+        loadMessages();
+      });
+    });
+  } catch (err) {
+    messageList.innerHTML = `<div class="muted">${err.message}</div>`;
+  }
+}
+
+async function loadMilestones() {
+  try {
+    const data = await App.apiFetch('/api/couple/milestones');
+    milestoneList.innerHTML = data
+      .map(
+        (item) => `
+        <div class="list-item">
+          <strong>${item.title}</strong>
+          <div class="muted">${item.eventDate}</div>
+          <button class="button ghost" data-remove="${item.id}">删除</button>
+        </div>
+      `
+      )
+      .join('') || '<div class="muted">暂无里程碑</div>';
+    milestoneList.querySelectorAll('[data-remove]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        await App.apiFetch(`/api/couple/milestones/${btn.dataset.remove}`, { method: 'DELETE' });
+        loadMilestones();
+      });
+    });
+  } catch (err) {
+    milestoneList.innerHTML = `<div class="muted">${err.message}</div>`;
+  }
+}
+
+async function loadDates() {
+  try {
+    const data = await App.apiFetch('/api/couple/important-dates');
+    dateList.innerHTML = data
+      .map(
+        (item) => `
+        <div class="list-item">
+          <strong>${item.title}</strong>
+          <div class="muted">${item.date} 提前 ${item.remindDays || 0} 天提醒</div>
+          <button class="button ghost" data-remove="${item.id}">删除</button>
+        </div>
+      `
+      )
+      .join('') || '<div class="muted">暂无重要日期</div>';
+    dateList.querySelectorAll('[data-remove]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        await App.apiFetch(`/api/couple/important-dates/${btn.dataset.remove}`, { method: 'DELETE' });
+        loadDates();
+      });
+    });
+  } catch (err) {
+    dateList.innerHTML = `<div class="muted">${err.message}</div>`;
+  }
+}
+
+async function loadAllLists() {
+  await Promise.all([loadAlbums(), loadCalendar(), loadTodos(), loadMessages(), loadMilestones(), loadDates()]);
+}
 
 loadStatus();
-setActiveTab('albums');
+loadAllLists();

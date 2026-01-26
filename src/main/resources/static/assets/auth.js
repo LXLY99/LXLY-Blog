@@ -1,173 +1,161 @@
-const tabs = document.querySelectorAll('#auth-tabs .tab');
-const content = document.getElementById('auth-content');
-const bgUpload = document.getElementById('bg-upload');
-const resetBg = document.getElementById('reset-bg');
-const visual = document.getElementById('auth-visual');
+const bgImages = [
+  'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=80',
+  'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1400&q=80',
+  'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1400&q=80',
+];
 
-const templates = {
-  login: () => `
-    <form class="form" id="login-form">
-      <div class="form-row">
-        <label>邮箱</label>
-        <input class="input" name="email" type="email" required />
-      </div>
-      <div class="form-row">
-        <label>密码</label>
-        <input class="input" name="password" type="password" required />
-      </div>
-      <button class="button" type="submit">登录</button>
-    </form>
-  `,
-  register: () => `
-    <form class="form" id="register-form">
-      <div class="form-row">
-        <label>昵称</label>
-        <input class="input" name="nickname" required />
-      </div>
-      <div class="form-row">
-        <label>邮箱</label>
-        <input class="input" name="email" type="email" required />
-      </div>
-      <div class="form-row">
-        <label>验证码</label>
-        <div class="search-bar">
-          <input class="input" name="code" required />
-          <button class="button ghost" type="button" id="send-register-code">发送</button>
-        </div>
-      </div>
-      <div class="form-row">
-        <label>密码</label>
-        <input class="input" name="password" type="password" required />
-      </div>
-      <button class="button" type="submit">注册并登录</button>
-    </form>
-  `,
-  reset: () => `
-    <form class="form" id="reset-form">
-      <div class="form-row">
-        <label>邮箱</label>
-        <input class="input" name="email" type="email" required />
-      </div>
-      <div class="form-row">
-        <label>验证码</label>
-        <div class="search-bar">
-          <input class="input" name="code" required />
-          <button class="button ghost" type="button" id="send-reset-code">发送</button>
-        </div>
-      </div>
-      <div class="form-row">
-        <label>新密码</label>
-        <input class="input" name="newPassword" type="password" required />
-      </div>
-      <button class="button" type="submit">重置密码</button>
-    </form>
-  `,
-};
+const screen = document.getElementById('auth-screen');
+const loginForm = document.getElementById('login-form');
+const extra = document.getElementById('auth-extra');
+const openRegister = document.getElementById('open-register');
+const openReset = document.getElementById('open-reset');
+const switchBg = document.getElementById('switch-bg');
 
-function applyBackground(url) {
-  if (url) {
-    visual.style.backgroundImage = `url(${url})`;
-  } else {
-    visual.style.backgroundImage = 'url(https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?auto=format&fit=crop&w=1200&q=80)';
-  }
+let bgIndex = Math.floor(Math.random() * bgImages.length);
+
+function applyBackground() {
+  screen.style.backgroundImage = `url(${bgImages[bgIndex]})`;
 }
 
-function setActiveTab(name) {
-  tabs.forEach((tab) => {
-    tab.classList.toggle('active', tab.dataset.tab === name);
+function setExtra(content) {
+  extra.innerHTML = content;
+}
+
+function renderRegister() {
+  setExtra(`
+    <div class="auth-extra">
+      <h3>注册新账号</h3>
+      <form class="form" id="register-form">
+        <div class="form-row">
+          <label>昵称</label>
+          <input class="input" name="nickname" required />
+        </div>
+        <div class="form-row">
+          <label>邮箱</label>
+          <input class="input" name="email" type="email" required />
+        </div>
+        <div class="form-row">
+          <label>验证码</label>
+          <div class="search-bar">
+            <input class="input" name="code" required />
+            <button class="button ghost" type="button" id="send-register-code">发送</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>密码</label>
+          <input class="input" name="password" type="password" required />
+        </div>
+        <button class="button" type="submit">注册并登录</button>
+      </form>
+    </div>
+  `);
+
+  document.getElementById('send-register-code').addEventListener('click', async () => {
+    const email = extra.querySelector('[name=email]').value;
+    if (!email) return App.showToast('请输入邮箱');
+    try {
+      await App.apiFetch('/api/auth/code/register', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      });
+      App.showToast('验证码已发送');
+    } catch (err) {
+      App.showToast(err.message);
+    }
   });
-  content.innerHTML = templates[name]();
 
-  if (name === 'register') {
-    document.getElementById('send-register-code').addEventListener('click', async () => {
-      const email = content.querySelector('[name=email]').value;
-      if (!email) return App.showToast('请输入邮箱');
-      try {
-        await App.apiFetch('/api/auth/code/register', {
-          method: 'POST',
-          body: JSON.stringify({ email }),
-        });
-        App.showToast('验证码已发送');
-      } catch (err) {
-        App.showToast(err.message);
-      }
-    });
-  }
-
-  if (name === 'reset') {
-    document.getElementById('send-reset-code').addEventListener('click', async () => {
-      const email = content.querySelector('[name=email]').value;
-      if (!email) return App.showToast('请输入邮箱');
-      try {
-        await App.apiFetch('/api/auth/code/reset-password', {
-          method: 'POST',
-          body: JSON.stringify({ email }),
-        });
-        App.showToast('验证码已发送');
-      } catch (err) {
-        App.showToast(err.message);
-      }
-    });
-  }
-
-  const form = content.querySelector('form');
-  if (form) {
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const formData = new FormData(form);
-      const payload = Object.fromEntries(formData.entries());
-
-      try {
-        if (name === 'login') {
-          const data = await App.apiFetch('/api/auth/login', {
-            method: 'POST',
-            body: JSON.stringify(payload),
-          });
-          App.setToken(data.token);
-          window.location.href = '/blog.html';
-        }
-        if (name === 'register') {
-          const data = await App.apiFetch('/api/auth/register', {
-            method: 'POST',
-            body: JSON.stringify(payload),
-          });
-          App.setToken(data.token);
-          window.location.href = '/blog.html';
-        }
-        if (name === 'reset') {
-          await App.apiFetch('/api/auth/reset-password', {
-            method: 'POST',
-            body: JSON.stringify(payload),
-          });
-          App.showToast('密码已重置，请登录');
-          setActiveTab('login');
-        }
-      } catch (err) {
-        App.showToast(err.message);
-      }
-    });
-  }
+  extra.querySelector('#register-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const payload = Object.fromEntries(new FormData(event.target).entries());
+    try {
+      const data = await App.apiFetch('/api/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      App.setToken(data.token);
+      window.location.href = '/home.html';
+    } catch (err) {
+      App.showToast(err.message);
+    }
+  });
 }
 
-tabs.forEach((tab) => {
-  tab.addEventListener('click', () => setActiveTab(tab.dataset.tab));
+function renderReset() {
+  setExtra(`
+    <div class="auth-extra">
+      <h3>重置密码</h3>
+      <form class="form" id="reset-form">
+        <div class="form-row">
+          <label>邮箱</label>
+          <input class="input" name="email" type="email" required />
+        </div>
+        <div class="form-row">
+          <label>验证码</label>
+          <div class="search-bar">
+            <input class="input" name="code" required />
+            <button class="button ghost" type="button" id="send-reset-code">发送</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>新密码</label>
+          <input class="input" name="newPassword" type="password" required />
+        </div>
+        <button class="button" type="submit">重置密码</button>
+      </form>
+    </div>
+  `);
+
+  document.getElementById('send-reset-code').addEventListener('click', async () => {
+    const email = extra.querySelector('[name=email]').value;
+    if (!email) return App.showToast('请输入邮箱');
+    try {
+      await App.apiFetch('/api/auth/code/reset-password', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      });
+      App.showToast('验证码已发送');
+    } catch (err) {
+      App.showToast(err.message);
+    }
+  });
+
+  extra.querySelector('#reset-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const payload = Object.fromEntries(new FormData(event.target).entries());
+    try {
+      await App.apiFetch('/api/auth/reset-password', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      App.showToast('密码已重置，请登录');
+      setExtra('');
+    } catch (err) {
+      App.showToast(err.message);
+    }
+  });
+}
+
+loginForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const payload = Object.fromEntries(new FormData(loginForm).entries());
+  try {
+    const data = await App.apiFetch('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    App.setToken(data.token);
+    window.location.href = '/home.html';
+  } catch (err) {
+    App.showToast(err.message);
+  }
 });
 
-bgUpload.addEventListener('change', (event) => {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    localStorage.setItem('authBackground', reader.result);
-    applyBackground(reader.result);
-  };
-  reader.readAsDataURL(file);
+openRegister.addEventListener('click', renderRegister);
+openReset.addEventListener('click', renderReset);
+
+switchBg.addEventListener('click', () => {
+  bgIndex = (bgIndex + 1) % bgImages.length;
+  applyBackground();
 });
 
-resetBg.addEventListener('click', () => {
-  localStorage.removeItem('authBackground');
-  applyBackground(null);
-});
-
-applyBackground(localStorage.getItem('authBackground'));
-setActiveTab('login');
+applyBackground();
