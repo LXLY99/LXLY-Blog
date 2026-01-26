@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>博客内容</title>
+  <link rel="stylesheet" href="/assets/styles.css" />
+</head>
+<body>
+  <header class="nav">
+    <div class="nav-inner">
+      <div class="nav-logo">LXLY Blog</div>
+      <div class="nav-links">
+        <a href="/index.html">首页</a>
+        <a href="/blog.html" class="active">博客</a>
+        <a href="/couple.html">情侣</a>
+        <a href="/profile.html">个人中心</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="search-bar">
+      <input class="input" id="search-input" placeholder="搜索文章标题或内容" />
+      <button class="button" id="search-btn">搜索</button>
+    </div>
+
+    <div class="split">
+      <section class="split-main">
+        <div id="article-list" class="list"></div>
+      </section>
+      <aside class="split-side">
+        <div class="card">
+          <h3 class="section-title">站长名片</h3>
+          <div id="sidebar-profile" class="list"></div>
+        </div>
+        <div class="card" style="margin-top: 16px;">
+          <h3 class="section-title">个人中心</h3>
+          <p class="muted">修改头像、昵称、密码并进入情侣模块。</p>
+          <a class="button" href="/profile.html">进入个人中心</a>
+        </div>
+        <div class="card" style="margin-top: 16px;">
+          <h3 class="section-title">情侣空间</h3>
+          <p class="muted">相册、日历、待办、留言与里程碑。</p>
+          <a class="button secondary" href="/couple.html">进入情侣模块</a>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="footer">愿每篇文章都被认真阅读</footer>
+
+  <script src="/assets/app.js"></script>
+  <script src="/assets/blog.js"></script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LXLY Blog</title>
+  <link rel="stylesheet" href="/assets/styles.css" />
+</head>
+<body>
+  <header class="nav">
+    <div class="nav-inner">
+      <div class="nav-logo">LXLY Blog</div>
+      <div class="nav-links">
+        <a href="/index.html" class="active">首页</a>
+        <a href="/blog.html">博客</a>
+        <a href="/couple.html">情侣</a>
+        <a href="/auth.html" class="button secondary">登录 / 注册</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div>
+        <span class="badge">站点公告</span>
+        <h1>记录生活 · 分享故事 · 让爱与灵感发生连接</h1>
+        <p>提供 CSDN 风格的内容展示，支持个人中心与情侣空间，让每一段关系都值得被记录。</p>
+        <div class="nav-links">
+          <a class="button" href="/blog.html">立即阅读</a>
+          <a class="button secondary" href="/auth.html">加入我们</a>
+        </div>
+      </div>
+      <div class="card" style="min-width: 280px;">
+        <h3 class="section-title">站长信息</h3>
+        <div id="admin-profile" class="list"></div>
+      </div>
+    </section>
+
+    <section style="margin-top: 32px;">
+      <div class="grid grid-3">
+        <div class="card">
+          <h3>博客阅读</h3>
+          <p class="muted">按 CSDN 风格浏览文章，支持搜索与标签聚合。</p>
+        </div>
+        <div class="card">
+          <h3>个人中心</h3>
+          <p class="muted">维护头像、昵称、密码与个人文章，统一管理。</p>
+        </div>
+        <div class="card">
+          <h3>情侣模块</h3>
+          <p class="muted">相册、日历、待办、留言与里程碑记录爱。</p>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin-top: 32px;">
+      <div class="card">
+        <h3 class="section-title">快速入口</h3>
+        <div class="grid grid-2">
+          <div>
+            <p class="muted">通过个人中心管理资料，并进入情侣空间。</p>
+            <a class="button" href="/profile.html">进入个人中心</a>
+          </div>
+          <div>
+            <p class="muted">开始创建你的第一篇文章。</p>
+            <a class="button secondary" href="/blog.html">浏览文章</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">© LXLY Blog · 让故事和爱被看见</footer>
+
+  <script src="/assets/app.js"></script>
+  <script>
+    App.apiFetch('/api/home/admin-profile')
+      .then((data) => {
+        const el = document.getElementById('admin-profile');
+        const items = [
+          { label: '昵称', value: data.nickname },
+          { label: '公告', value: data.notice },
+          { label: 'GitHub', value: data.github },
+          { label: 'Bilibili', value: data.bilibili },
+          { label: '邮箱', value: data.email },
+        ];
+        el.innerHTML = items
+          .filter((item) => item.value)
+          .map(
+            (item) => `<div class="list-item"><strong>${item.label}</strong><div class="muted">${item.value}</div></div>`
+          )
+          .join('');
+      })
+      .catch(() => {
+        document.getElementById('admin-profile').innerHTML = '<div class="muted">暂无法加载站长信息</div>';
+      });
+  </script>
+</body>
+</html>
