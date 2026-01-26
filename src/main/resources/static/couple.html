@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>情侣模块</title>
+  <link rel="stylesheet" href="/assets/styles.css" />
+</head>
+<body>
+  <header class="nav">
+    <div class="nav-inner">
+      <div class="nav-logo">LXLY Blog</div>
+      <div class="nav-links">
+        <a href="/blog.html">博客</a>
+        <a href="/profile.html">个人中心</a>
+        <button class="button ghost" data-logout>退出登录</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <h2>情侣关系</h2>
+      <p class="muted">发送邀请、接受或解除关系。</p>
+      <div class="grid grid-2" style="margin-top: 16px;">
+        <form class="form" id="invite-form">
+          <label>邀请对象用户 ID</label>
+          <input class="input" name="targetUserId" placeholder="例如 2" required />
+          <button class="button" type="submit">发送邀请</button>
+        </form>
+        <div class="card">
+          <h4>当前状态</h4>
+          <div id="relation-status" class="muted">加载中...</div>
+          <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="button secondary" id="refresh-status">刷新</button>
+            <button class="button ghost" id="breakup-btn">解除关系</button>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-top: 16px;">
+        <h4>待处理邀请</h4>
+        <div id="pending-invites" class="list"></div>
+      </div>
+    </div>
+
+    <section class="card" style="margin-top: 24px;">
+      <h2>情侣内容</h2>
+      <div class="tabs" id="content-tabs">
+        <div class="tab active" data-tab="albums">相册</div>
+        <div class="tab" data-tab="calendar">共享日历</div>
+        <div class="tab" data-tab="todos">共同待办</div>
+        <div class="tab" data-tab="messages">留言板</div>
+        <div class="tab" data-tab="milestones">里程碑</div>
+        <div class="tab" data-tab="dates">重要日期</div>
+      </div>
+      <div id="content-panel" style="margin-top: 16px;"></div>
+    </section>
+  </main>
+
+  <script src="/assets/app.js"></script>
+  <script src="/assets/couple.js"></script>
+</body>
+</html>

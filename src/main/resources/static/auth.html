@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>登录 / 注册</title>
+  <link rel="stylesheet" href="/assets/styles.css" />
+</head>
+<body>
+  <div class="auth-layout">
+    <section class="auth-visual" id="auth-visual">
+      <div class="auth-visual-content">
+        <h1>欢迎回来</h1>
+        <p>记录生活，分享灵感，在情侣空间里留下温暖回忆。</p>
+        <div class="notice" style="margin-top: 24px;">
+          支持自定义背景图，上传后将保存在你的设备中。
+        </div>
+      </div>
+    </section>
+    <section class="auth-panel">
+      <div class="nav-links">
+        <a href="/index.html">← 返回首页</a>
+      </div>
+      <div class="auth-card">
+        <div class="tabs" id="auth-tabs">
+          <div class="tab active" data-tab="login">登录</div>
+          <div class="tab" data-tab="register">注册</div>
+          <div class="tab" data-tab="reset">忘记密码</div>
+        </div>
+        <div id="auth-content" style="margin-top: 16px;"></div>
+      </div>
+      <div class="card">
+        <h3 class="section-title">自定义背景图</h3>
+        <input type="file" id="bg-upload" class="input" accept="image/*" />
+        <button class="button secondary" id="reset-bg" style="margin-top: 12px;">恢复默认</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="/assets/app.js"></script>
+  <script src="/assets/auth.js"></script>
+</body>
+</html>
