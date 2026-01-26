@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>首页</title>
+  <link rel="stylesheet" href="/assets/styles.css" />
+</head>
+<body>
+  <header class="nav">
+    <div class="nav-inner">
+      <div class="nav-logo">LXLY Blog</div>
+      <div class="nav-links">
+        <a href="/home.html" class="active">首页</a>
+        <a href="/blog.html">博客</a>
+        <a href="/profile.html">个人中心</a>
+        <a href="/couple.html">情侣</a>
+        <button class="button ghost" data-logout>退出</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div>
+        <span class="badge">站点公告</span>
+        <h1>欢迎回到你的专属空间</h1>
+        <p>这里记录你的文章、情侣互动与重要时刻。</p>
+        <div class="nav-links">
+          <a class="button" href="/blog.html">进入博客</a>
+          <a class="button secondary" href="/couple.html">情侣模块</a>
+        </div>
+      </div>
+      <div class="card" style="min-width: 280px;">
+        <h3 class="section-title">站长信息</h3>
+        <div id="admin-profile" class="list"></div>
+      </div>
+    </section>
+
+    <section style="margin-top: 32px;" class="grid grid-3">
+      <div class="card">
+        <h3>博客阅读</h3>
+        <p class="muted">文章列表支持搜索与 Markdown 展示。</p>
+      </div>
+      <div class="card">
+        <h3>个人中心</h3>
+        <p class="muted">更新头像、昵称与密码，管理情侣背景图。</p>
+      </div>
+      <div class="card">
+        <h3>情侣空间</h3>
+        <p class="muted">一键查看相册、日历、待办与纪念日。</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">© LXLY Blog · 让故事和爱被看见</footer>
+
+  <script src="/assets/app.js"></script>
+  <script>
+    App.requireAuth();
+    App.initNav();
+    App.apiFetch('/api/home/admin-profile')
+      .then((data) => {
+        const el = document.getElementById('admin-profile');
+        const items = [
+          { label: '昵称', value: data.nickname },
+          { label: '公告', value: data.notice },
+          { label: 'GitHub', value: data.github },
+          { label: 'Bilibili', value: data.bilibili },
+          { label: '邮箱', value: data.email },
+        ];
+        el.innerHTML = items
+          .filter((item) => item.value)
+          .map(
+            (item) => `<div class="list-item"><strong>${item.label}</strong><div class="muted">${item.value}</div></div>`
+          )
+          .join('');
+      })
+      .catch(() => {
+        document.getElementById('admin-profile').innerHTML = '<div class="muted">暂无法加载站长信息</div>';
+      });
+  </script>
+</body>
+</html>

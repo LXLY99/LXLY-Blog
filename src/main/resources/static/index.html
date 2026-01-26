@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>登录 / 注册</title>
+  <link rel="stylesheet" href="/assets/styles.css" />
+</head>
+<body>
+  <div class="auth-fullscreen" id="auth-screen">
+    <div class="auth-box">
+      <div class="auth-header">
+        <div>
+          <h1>欢迎来到 LXLY Blog</h1>
+          <p>请先登录以进入站内内容</p>
+        </div>
+        <button class="button ghost" id="switch-bg">切换背景</button>
+      </div>
+      <form class="form" id="login-form">
+        <div class="form-row">
+          <label>邮箱</label>
+          <input class="input" name="email" type="email" required />
+        </div>
+        <div class="form-row">
+          <label>密码</label>
+          <input class="input" name="password" type="password" required />
+        </div>
+        <button class="button" type="submit">登录</button>
+      </form>
+      <div class="auth-actions">
+        <button class="link-button" id="open-register">注册</button>
+        <button class="link-button" id="open-reset">忘记密码</button>
+      </div>
+      <div id="auth-extra" style="margin-top: 16px;"></div>
+    </div>
+  </div>
+
+  <script src="/assets/app.js"></script>
+  <script src="/assets/auth.js"></script>
+</body>
+</html>

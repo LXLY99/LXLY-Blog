@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>情侣模块</title>
+  <link rel="stylesheet" href="/assets/styles.css" />
+</head>
+<body>
+  <header class="nav">
+    <div class="nav-inner">
+      <div class="nav-logo">LXLY Blog</div>
+      <div class="nav-links">
+        <a href="/home.html">首页</a>
+        <a href="/blog.html">博客</a>
+        <a href="/profile.html">个人中心</a>
+        <button class="button ghost" data-logout>退出登录</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="couple-hero" id="couple-hero">
+      <div class="card">
+        <h2>情侣空间</h2>
+        <p class="muted">相册、日历、待办、留言与纪念日一站式记录。</p>
+        <div class="nav-links" style="margin-top: 12px; flex-wrap: wrap;">
+          <a class="button" href="#relation">关系管理</a>
+          <a class="button secondary" href="#albums">相册</a>
+          <a class="button ghost" href="#calendar">日历</a>
+          <a class="button ghost" href="#todos">待办</a>
+          <a class="button ghost" href="#messages">留言</a>
+          <a class="button ghost" href="#milestones">里程碑</a>
+          <a class="button ghost" href="#dates">重要日期</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="relation" style="margin-top: 24px;">
+      <h2>情侣关系管理</h2>
+      <div class="grid grid-2" style="margin-top: 16px;">
+        <form class="form" id="invite-form">
+          <label>邀请对象用户 ID</label>
+          <input class="input" name="targetUserId" placeholder="例如 2" required />
+          <button class="button" type="submit">发送邀请</button>
+        </form>
+        <div class="card">
+          <h4>当前状态</h4>
+          <div id="relation-status" class="muted">加载中...</div>
+          <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="button secondary" id="refresh-status">刷新</button>
+            <button class="button ghost" id="breakup-btn">解除关系</button>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-top: 16px;">
+        <h4>待处理邀请</h4>
+        <div id="pending-invites" class="list"></div>
+      </div>
+    </section>
+
+    <section class="card" id="albums" style="margin-top: 24px;">
+      <h2>情侣相册</h2>
+      <div class="grid grid-2">
+        <form class="form" id="album-form">
+          <label>相册名称</label>
+          <input class="input" name="name" required />
+          <label>封面上传（SM.MS）</label>
+          <input class="input" type="file" id="album-cover" accept="image/*" />
+          <div class="muted" id="album-cover-result"></div>
+          <input type="hidden" name="coverUrl" />
+          <input type="hidden" name="coverDeleteHash" />
+          <label>描述</label>
+          <input class="input" name="description" />
+          <button class="button" type="submit">创建相册</button>
+        </form>
+        <div>
+          <h4>相册列表</h4>
+          <div id="album-list" class="list"></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 16px;">
+        <h4>添加照片</h4>
+        <form class="form" id="photo-form">
+          <label>相册 ID</label>
+          <input class="input" name="albumId" required />
+          <label>照片上传（SM.MS）</label>
+          <input class="input" type="file" id="photo-upload" accept="image/*" />
+          <div class="muted" id="photo-upload-result"></div>
+          <input type="hidden" name="url" />
+          <input type="hidden" name="deleteHash" />
+          <label>备注</label>
+          <input class="input" name="note" />
+          <button class="button" type="submit">添加照片</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="card" id="calendar" style="margin-top: 24px;">
+      <h2>共享日历</h2>
+      <div class="grid grid-2">
+        <form class="form" id="calendar-form">
+          <label>标题</label>
+          <input class="input" name="title" required />
+          <label>描述</label>
+          <input class="input" name="description" />
+          <label>开始时间</label>
+          <input class="input" name="startTime" type="datetime-local" required />
+          <label>结束时间</label>
+          <input class="input" name="endTime" type="datetime-local" />
+          <label>共享</label>
+          <select class="input" name="shared">
+            <option value="true">共享</option>
+            <option value="false">仅自己</option>
+          </select>
+          <button class="button" type="submit">创建日程</button>
+        </form>
+        <div>
+          <h4>日程列表</h4>
+          <div id="calendar-list" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="todos" style="margin-top: 24px;">
+      <h2>共同待办</h2>
+      <div class="grid grid-2">
+        <form class="form" id="todo-form">
+          <label>待办内容</label>
+          <input class="input" name="content" required />
+          <label>截止时间</label>
+          <input class="input" name="dueTime" type="datetime-local" />
+          <button class="button" type="submit">创建待办</button>
+        </form>
+        <div>
+          <h4>待办列表</h4>
+          <div id="todo-list" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="messages" style="margin-top: 24px;">
+      <h2>留言板</h2>
+      <div class="grid grid-2">
+        <form class="form" id="message-form">
+          <label>留言内容</label>
+          <textarea class="input" name="content" required style="min-height: 120px;"></textarea>
+          <button class="button" type="submit">发送留言</button>
+        </form>
+        <div>
+          <h4>留言列表</h4>
+          <div id="message-list" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="milestones" style="margin-top: 24px;">
+      <h2>里程碑</h2>
+      <div class="grid grid-2">
+        <form class="form" id="milestone-form">
+          <label>里程碑标题</label>
+          <input class="input" name="title" required />
+          <label>描述</label>
+          <input class="input" name="description" />
+          <label>日期</label>
+          <input class="input" name="eventDate" type="date" required />
+          <button class="button" type="submit">创建里程碑</button>
+        </form>
+        <div>
+          <h4>里程碑列表</h4>
+          <div id="milestone-list" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="dates" style="margin-top: 24px;">
+      <h2>重要日期</h2>
+      <div class="grid grid-2">
+        <form class="form" id="date-form">
+          <label>重要日期名称</label>
+          <input class="input" name="title" required />
+          <label>日期</label>
+          <input class="input" name="date" type="date" required />
+          <label>提前提醒天数</label>
+          <input class="input" name="remindDays" type="number" />
+          <button class="button" type="submit">添加日期</button>
+        </form>
+        <div>
+          <h4>重要日期列表</h4>
+          <div id="date-list" class="list"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/assets/app.js"></script>
+  <script src="/assets/couple.js"></script>
+</body>
+</html>
